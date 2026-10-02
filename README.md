@@ -26,8 +26,9 @@ vehicles in `vehicles.json`, never by hand-editing files in `dist/`,** since
 `dist/` is regenerated from scratch on every build.
 
 ## About Peto
-A small chat button in the corner of every page (auto-opens once, on the
-home page only). It asks which car or bike, matches it by name, asks
+A small chat button in the corner of every page. It opens only when tapped
+and uses the same fixed, viewport-bounded panel on every page. It asks which
+car or bike, matches it by name, asks
 Normal/High Octane/Diesel — only offering fuels that vehicle actually takes
 — states the amount, then asks if you'd like another. It's a fixed
 conversation flow in plain JavaScript, not a hosted AI model: a key embedded
@@ -43,19 +44,20 @@ node test.js    # data integrity, broken links, JSON-LD, page counts
 Both must print "ALL TESTS PASSED". `test.js` does not open a browser; it
 checks the generated files directly.
 
-## Deploying to Cloudflare Pages (auto-updates daily)
-1. Import this GitHub repository in Cloudflare Pages and select `main` as the
-   production branch.
-2. Use the **None** framework preset, `/` as the root directory, `node build.js`
-   as the build command, and `dist` as the output directory. Set `NODE_VERSION`
-   to `20`.
+## Deploying to Netlify (auto-updates daily)
+1. Connect this GitHub repository to Netlify and select `main` as the
+   production branch. The `netlify.toml` file configures `node build.js` as
+   the build command, `dist` as the publish directory, and Node.js 20.
+2. The default canonical site URL is `https://fulltankpk.netlify.app`. If you
+   use a custom domain, set a `SITE` environment variable in Netlify and a
+   `SITE` Actions variable in the GitHub repository to that URL.
 3. Enable GitHub Actions for the repository. The daily workflow requests only
    `contents: write` so it can commit price updates; no broader default token
    permissions are needed. Its third-party Actions are pinned to full commit
    SHAs to satisfy the repository's Actions policy.
 4. Every day at 12:00 AM PKT, `.github/workflows/daily.yml` runs
    `fetch-prices.js`, commits the new `prices.json`/`history.json`, and that
-   push triggers Cloudflare Pages to rebuild and redeploy from `main`.
+   push triggers Netlify to rebuild and redeploy from `main`.
 
 Trigger it by hand anytime: repo → **Actions** tab → **daily-fuel-price-update**
 → **Run workflow**.
@@ -117,6 +119,16 @@ The site now has an original visual identity grounded in the subject itself
 To change the palette, edit the `:root` custom properties at the top of the
 `CSS` template literal in `build.js` — every page inherits from there.
 
+## Shared navigation and Peto layout
+- The header and footer use a consistent centered 1,120px layout, with a
+  horizontally scrollable navigation row on narrow screens.
+- Peto no longer opens on its own. Its launcher stays a compact fixed-size
+  button, and the chat panel is capped at 360px wide and 520px high (also
+  limited by the viewport), with scrolling contained inside the conversation
+  and quick-reply areas.
+- These shared styles are generated on every page from `build.js` and are
+  checked by `test.js`.
+
 ## Blog (new)
 A `/blog/` section with 6 original posts, written around real long-tail
 searches Pakistanis make (confirmed against what's currently ranking):
@@ -170,10 +182,10 @@ What actually moves the needle from here is the same as before: backlinks,
 consistent daily updates, and time.
 
 ## New in this update
-- **Renamed to FullTank.pk** — nav bar, page titles, JSON-LD and the default
-  `SITE` domain in `build.js` all now say FullTank.pk. If you register a
-  different domain, update the `SITE` fallback in `build.js` and the
-  `vars.SITE` GitHub Actions variable.
+- **Renamed to FullTank.pk** — nav bar, page titles, and JSON-LD all say
+  FullTank.pk. The default `SITE` canonical URL is the deployed Netlify
+  address; set the `SITE` variable in Netlify and GitHub Actions if you use
+  a custom domain.
 - **Added vehicles** (checked against PakWheels' current listings):
   Jetour Dashing, Jetour X70 Plus, Jetour T2, BYD Shark 6 (PHEV pickup),
   United Bravo, Prince Pearl, FAW V2.
@@ -194,8 +206,8 @@ consistent daily updates, and time.
   which currently share one estimated figure.
 - **High Octane price** (~Rs 445) is a placeholder — it's deregulated and
   varies by oil company, so confirm a current figure.
-- **Replace** `YOUR-DOMAIN.pk` (set via the `SITE` env var / Netlify
-  variable, see `netlify.toml`/workflow) and `YOUR-EMAIL` in `build.js`.
+- **Set `SITE`** in Netlify and GitHub Actions if you use a custom domain;
+  otherwise the deployed Netlify address is used automatically.
 - **Add AdSense**: paste your script where `<!-- AdSense script here -->`
   appears in every generated page's `<head>` (in `build.js`'s `page()`
   function), and add your `ads.txt`.

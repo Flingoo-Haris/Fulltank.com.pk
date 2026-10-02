@@ -26,6 +26,8 @@ jobs:
 
       - name: Rebuild site (sanity check)
         run: node build.js
+        env:
+          SITE: ${{ vars.SITE }}
 
       - name: Run tests
         run: node test.js

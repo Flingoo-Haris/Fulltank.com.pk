@@ -70,8 +70,17 @@ if (fs.existsSync('dist/index.html')) {
   (function walk(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); fs.statSync(p).isDirectory() ? walk(p) : (f.endsWith('.html') && allHtml.push(p)); } })('dist');
   const noKeywords = allHtml.filter(f => !fs.readFileSync(f, 'utf8').includes('name="keywords"'));
   const noTwitterFull = allHtml.filter(f => { const s = fs.readFileSync(f, 'utf8'); return !s.includes('twitter:title') || !s.includes('twitter:description') || !s.includes('twitter:image'); });
+  const noSharedLayout = allHtml.filter(f => {
+    const s = fs.readFileSync(f, 'utf8');
+    return !s.includes('class="nav-links"') || !s.includes('class="footer-inner"') || !s.includes('id="peto-fab"') ||
+      !s.includes('#peto-panel{position:fixed') || !s.includes('width:min(360px,calc(100vw - 32px))') ||
+      !s.includes('height:min(520px,calc(100dvh - 104px))');
+  });
   assert(noKeywords.length === 0, `every page has a meta keywords tag (${allHtml.length - noKeywords.length}/${allHtml.length})` + (noKeywords.length ? ': missing on ' + JSON.stringify(noKeywords.slice(0, 5)) : ''));
   assert(noTwitterFull.length === 0, `every page has full Twitter card tags (title/description/image) (${allHtml.length - noTwitterFull.length}/${allHtml.length})`);
+  assert(noSharedLayout.length === 0, `every page has the responsive shared header/footer and bounded Peto widget (${allHtml.length - noSharedLayout.length}/${allHtml.length})` + (noSharedLayout.length ? ': missing on ' + JSON.stringify(noSharedLayout.slice(0, 5)) : ''));
+  const home = fs.readFileSync('dist/index.html', 'utf8');
+  assert(!home.includes('setTimeout(function(){if(!panel.classList.contains("open"))open()}'), 'Peto does not open automatically on the home page');
 }
 
 const { execSync } = require('child_process');
