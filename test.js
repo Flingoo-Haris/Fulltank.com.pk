@@ -74,7 +74,9 @@ if (fs.existsSync('dist/index.html')) {
   assert(noTwitterFull.length === 0, `every page has full Twitter card tags (title/description/image) (${allHtml.length - noTwitterFull.length}/${allHtml.length})`);
 }
 
-require('child_process').execSync('node --check build.js && node --check fetch-prices.js');
+const { execSync } = require('child_process');
+const nodeBin = JSON.stringify(process.execPath);
+execSync(`${nodeBin} --check build.js && ${nodeBin} --check fetch-prices.js`);
 console.log('PASS: build.js and fetch-prices.js have no syntax errors');
 
 console.log(fail ? ('\n' + fail + ' TEST(S) FAILED') : '\nALL TESTS PASSED');
