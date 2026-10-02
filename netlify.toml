@@ -1,0 +1,11 @@
+[build]
+  publish = "dist"
+  command = "node build.js"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[headers]]
+  for = "/prices.json"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
