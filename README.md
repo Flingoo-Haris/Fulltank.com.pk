@@ -43,17 +43,19 @@ node test.js    # data integrity, broken links, JSON-LD, page counts
 Both must print "ALL TESTS PASSED". `test.js` does not open a browser; it
 checks the generated files directly.
 
-## Deploying to Netlify (auto-updates daily)
-1. Push this whole folder to a new GitHub repository.
-2. On app.netlify.com → **Add new site → Import an existing project → GitHub** → pick the repo.
-   `netlify.toml` already sets the build command (`node build.js`) and publish
-   directory (`dist`) — you won't be asked to configure anything.
-3. In the repo's GitHub **Settings → Actions → General → Workflow permissions**,
-   choose **"Read and write permissions"** — the daily job needs this to commit
-   the new price.
-4. Done. Every day at 12:00 AM PKT, `.github/workflows/daily.yml` runs
+## Deploying to Cloudflare Pages (auto-updates daily)
+1. Import this GitHub repository in Cloudflare Pages and select `main` as the
+   production branch.
+2. Use the **None** framework preset, `/` as the root directory, `node build.js`
+   as the build command, and `dist` as the output directory. Set `NODE_VERSION`
+   to `20`.
+3. Enable GitHub Actions for the repository. The daily workflow requests only
+   `contents: write` so it can commit price updates; no broader default token
+   permissions are needed. Its third-party Actions are pinned to full commit
+   SHAs to satisfy the repository's Actions policy.
+4. Every day at 12:00 AM PKT, `.github/workflows/daily.yml` runs
    `fetch-prices.js`, commits the new `prices.json`/`history.json`, and that
-   push makes Netlify rebuild and redeploy automatically.
+   push triggers Cloudflare Pages to rebuild and redeploy from `main`.
 
 Trigger it by hand anytime: repo → **Actions** tab → **daily-fuel-price-update**
 → **Run workflow**.
