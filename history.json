@@ -1,9 +1,1 @@
-[
-{"iso":"2026-09-02","date":"2 Sep 2026","petrol":343.87,"hOctane":445.00,"diesel":370.92},
-{"iso":"2026-09-08","date":"8 Sep 2026","petrol":358.77,"hOctane":445.00,"diesel":381.77},
-{"iso":"2026-09-18","date":"18 Sep 2026","petrol":390.79,"hOctane":445.00,"diesel":424.92},
-{"iso":"2026-09-24","date":"24 Sep 2026","petrol":390.12,"hOctane":445.00,"diesel":414.75},
-{"iso":"2026-09-26","date":"26 Sep 2026","petrol":390.30,"hOctane":445.00,"diesel":411.16},
-{"iso":"2026-09-27","date":"27 Sep 2026","petrol":391.30,"hOctane":445.00,"diesel":408.53},
-{"iso":"2026-10-01","date":"1 Oct 2026","petrol":387.40,"hOctane":445.00,"diesel":400.35}
-]
+[{"iso":"2026-09-02","date":"2 Sep 2026","petrol":343.87,"hOctane":445,"diesel":370.92},{"iso":"2026-09-08","date":"8 Sep 2026","petrol":358.77,"hOctane":445,"diesel":381.77},{"iso":"2026-09-18","date":"18 Sep 2026","petrol":390.79,"hOctane":445,"diesel":424.92},{"iso":"2026-09-24","date":"24 Sep 2026","petrol":390.12,"hOctane":445,"diesel":414.75},{"iso":"2026-09-26","date":"26 Sep 2026","petrol":390.3,"hOctane":445,"diesel":411.16},{"iso":"2026-09-27","date":"27 Sep 2026","petrol":391.3,"hOctane":445,"diesel":408.53},{"iso":"2026-10-01","date":"1 Oct 2026","petrol":387.4,"hOctane":445,"diesel":400.35},{"iso":"2026-10-03","date":"3 Oct 2026","petrol":392.76,"hOctane":410,"diesel":399.64}]
