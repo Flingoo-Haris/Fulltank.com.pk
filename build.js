@@ -3,7 +3,7 @@
 // /cars/<brand>.html /bikes/<brand>.html (precalculated tables), one page per
 // vehicle for SEO, /add.html (manual add, its own page), /price-history.html.
 const fs = require('fs'), path = require('path');
-const SITE = (process.env.SITE || 'https://fulltank.pk').replace(/\/$/, '');
+const SITE = (process.env.SITE || 'https://fulltankpk.netlify.app').replace(/\/$/, '');
 const pr = JSON.parse(fs.readFileSync('prices.json'));
 const V = JSON.parse(fs.readFileSync('vehicles.json'));
 
@@ -37,10 +37,13 @@ body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-app
 .w{max-width:880px;margin:0 auto;padding:16px}
 .ic{width:1em;height:1em;vertical-align:-.15em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 nav.top{background:var(--ink);border-bottom:3px solid var(--pri)}
-nav.top .w{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:10px 16px}
-nav.top a{color:#dfe8e4;text-decoration:none;font-size:.92rem;font-weight:600}
-nav.top a:hover{color:#fff}
-nav.top a.brand{color:#fff;font-size:1.08rem;font-weight:800;margin-right:auto;letter-spacing:-.01em}
+nav.top .w{max-width:1120px;min-height:72px;display:flex;gap:24px;align-items:center;padding:12px 24px}
+nav.top .brand{display:flex;align-items:center;flex:0 0 auto;color:#fff;text-decoration:none;font-size:1.12rem;font-weight:800;letter-spacing:-.02em}
+nav.top .brand img{margin-right:8px}
+.nav-links{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto}
+.nav-links a{color:#cbd5cf;text-decoration:none;font-size:.9rem;font-weight:600;padding:9px 11px;border-radius:9px;white-space:nowrap}
+.nav-links a:hover,.nav-links a:focus-visible{background:var(--ink2);color:#fff}
+.nav-links a:focus-visible{outline:2px solid var(--pri2);outline-offset:2px}
 .crumb{color:var(--mut);font-size:.85rem;margin:14px 0 4px}
 .crumb a{color:var(--mut)}
 h1{font-size:clamp(1.3rem,4.5vw,2rem);line-height:1.2;margin:6px 0 10px;letter-spacing:-.01em}
@@ -98,7 +101,14 @@ th{background:var(--bg)}
 .hubband p{color:rgba(255,255,255,.85);margin:0}
 .tag{display:inline-block;font-size:.7rem;border:1px solid var(--bd);border-radius:6px;padding:0 6px;margin-right:4px;color:var(--mut)}
 .ad{margin:16px 0;min-height:90px;border:1px dashed var(--bd);border-radius:10px;display:grid;place-items:center;color:var(--mut);font-size:.8rem}
-footer{color:var(--mut);font-size:.8rem;padding:24px 16px;border-top:1px solid var(--bd);margin-top:20px}
+.site-footer{background:var(--ink);color:#aab6ad;margin-top:48px;border-top:3px solid var(--pri)}
+.footer-inner{max-width:1120px;margin:0 auto;padding:32px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px 48px;align-items:start}
+.footer-brand{color:#fff;font-size:1.05rem;font-weight:800;margin:0 0 8px}
+.footer-copy{max-width:600px;margin:0;font-size:.86rem;line-height:1.7}
+.footer-links{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:flex-end}
+.footer-links a{color:#dfe8e4;text-decoration:none;font-size:.88rem;font-weight:600}
+.footer-links a:hover,.footer-links a:focus-visible{color:#fff;text-decoration:underline}
+.footer-meta{grid-column:1/-1;border-top:1px solid #303a35;padding-top:16px;margin:0;color:#8d9a92;font-size:.78rem}
 .list{display:grid;gap:8px;margin-top:10px}
 .car{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--pri);border-radius:10px;padding:10px 14px;display:grid;grid-template-columns:1fr auto;gap:2px 12px}
 .car h3{margin:0;font-size:1rem;grid-column:1}
@@ -106,6 +116,15 @@ footer{color:var(--mut);font-size:.8rem;padding:24px 16px;border-top:1px solid v
 .car .c{grid-row:1/3;grid-column:2;text-align:right;font-weight:700;font-size:1.1rem;color:var(--acc);align-self:center;font-variant-numeric:tabular-nums}
 .bh{font-size:1.05rem;margin:18px 0 2px;color:var(--pri)}
 .add-list{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin:8px 0}
+@media(max-width:760px){
+ nav.top .w{min-height:0;display:block;padding:12px 16px 10px}
+ nav.top .brand{min-height:38px}
+ .nav-links{justify-content:flex-start;gap:2px;margin:8px -16px 0;padding:0 12px 4px;overflow-x:auto;overscroll-behavior-x:contain}
+ .nav-links a{padding:8px 10px}
+ .footer-inner{grid-template-columns:1fr;gap:18px;padding:28px 20px}
+ .footer-links{justify-content:flex-start}
+ .footer-meta{grid-column:auto}
+}
 `;
 // Original line-icon sprite (no stock imagery — fast, copyright-free, on-brand)
 const ICONS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -122,40 +141,40 @@ const ICONS = `<svg width="0" height="0" style="position:absolute" aria-hidden="
 
 /* ---------- Peto (shared, embedded on every page) ---------- */
 const PETO_CSS = `
-#peto-fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:none;font-size:1.5rem;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;padding:0}
-#peto-badge{position:fixed;right:16px;bottom:70px;background:var(--acc);color:#1a1200;font-size:.7rem;font-weight:700;border-radius:99px;padding:2px 8px;z-index:1000;box-shadow:0 2px 6px rgba(0,0,0,.2);border:none;cursor:pointer}
-#peto-panel{position:fixed;right:18px;bottom:86px;width:min(360px,92vw);max-height:min(560px,75vh);background:var(--card);border:1px solid var(--bd);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden;z-index:1000}
+#peto-fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:148px;height:52px;border-radius:26px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:none;font-size:.92rem;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 14px}
+#peto-fab:hover{filter:brightness(1.06)}
+#peto-fab:focus-visible,#peto-close:focus-visible,#peto-send:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+#peto-panel{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 80px);width:min(360px,calc(100vw - 32px));height:min(520px,calc(100vh - 104px));height:min(520px,calc(100dvh - 104px));min-height:0;max-height:calc(100vh - 104px);max-height:calc(100dvh - 104px);background:var(--card);border:1px solid var(--bd);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden;z-index:1000}
 #peto-panel.open{display:flex}
-#peto-head{background:linear-gradient(135deg,var(--pri),#134e4a);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}
+#peto-head{flex:0 0 auto;background:linear-gradient(135deg,var(--pri),#134e4a);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}
 #peto-head .av{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
 #peto-head .ti{flex:1}
 #peto-head b{display:block;font-size:.95rem}
 #peto-head small{opacity:.85}
 #peto-close{background:transparent;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:2px 6px;width:auto}
-#peto-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
-.pm{max-width:85%;padding:9px 12px;border-radius:14px;font-size:.92rem;line-height:1.4}
+#peto-msgs{flex:1 1 0;min-height:0;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.pm{max-width:85%;padding:9px 12px;border-radius:14px;font-size:.92rem;line-height:1.4;overflow-wrap:anywhere}
 .pm.bot{background:var(--card);border:1px solid var(--bd);align-self:flex-start;border-bottom-left-radius:4px}
 .pm.me{background:var(--pri);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
-#peto-opts{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px;background:var(--bg)}
-.popt{background:var(--card);border:1px solid var(--pri);color:var(--pri);border-radius:99px;padding:6px 12px;font-size:.85rem;cursor:pointer;width:auto}
+#peto-opts{flex:0 1 auto;max-height:104px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px;background:var(--bg)}
+.popt{background:var(--card);border:1px solid var(--pri);color:var(--pri);border-radius:99px;padding:6px 12px;font-size:.85rem;cursor:pointer;width:auto;max-width:100%}
 .popt:hover{background:var(--pri);color:#fff}
-#peto-form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--bd)}
-#peto-input{flex:1}
-#peto-send{background:var(--pri);color:#fff;border-color:var(--pri);cursor:pointer;width:auto}
+#peto-form{flex:0 0 auto;display:flex;gap:6px;padding:10px;border-top:1px solid var(--bd)}
+#peto-input{flex:1;min-width:0;width:auto}
+#peto-send{background:var(--pri);color:#fff;border-color:var(--pri);cursor:pointer;width:44px;flex:0 0 44px}
 `;
 const petoHtml = `
-<button id="peto-badge" type="button" onclick="Peto.open()">Ask Peto 👋</button>
-<button id="peto-fab" type="button" aria-label="Open Peto assistant" onclick="Peto.open()">⛽</button>
-<div id="peto-panel" role="dialog" aria-label="Peto fuel cost assistant">
+<button id="peto-fab" type="button" aria-label="Ask Peto about fuel costs" aria-controls="peto-panel" aria-expanded="false" onclick="Peto.toggle()"><span aria-hidden="true">⛽</span> Ask Peto</button>
+<div id="peto-panel" role="dialog" aria-label="Peto fuel cost assistant" aria-modal="false">
  <div id="peto-head"><div class="av">🤖</div><div class="ti"><b>Peto</b><small>Fuel cost assistant</small></div><button id="peto-close" aria-label="Close" onclick="Peto.close()">✕</button></div>
  <div id="peto-msgs"></div>
  <div id="peto-opts"></div>
  <form id="peto-form"><input id="peto-input" autocomplete="off" placeholder="Type here…"><button id="peto-send" type="submit">➤</button></form>
 </div>`;
 // autoOpen: only the home page pops Peto open on its own; other pages just show the button.
-const petoScript = (autoOpen) => `
+const petoScript = () => `
 var Peto=(function(){
- var panel,msgs,opts,form,input,state={step:"idle",vehicle:null,matches:[]};
+ var panel,msgs,opts,form,input,button,state={step:"idle",vehicle:null,matches:[]};
  function el(h){var d=document.createElement("div");d.innerHTML=h;return d.firstChild}
  function say(text){msgs.appendChild(el('<div class="pm bot">'+text+'</div>'));msgs.scrollTop=msgs.scrollHeight}
  function me(text){msgs.appendChild(el('<div class="pm me">'+text.replace(/</g,"&lt;")+'</div>'));msgs.scrollTop=msgs.scrollHeight}
@@ -168,10 +187,11 @@ var Peto=(function(){
  function handle(val){if(state.step=="askFuel"){clearOpts();calc(val);return}if(state.step=="askMore"){if(val=="more"){askVehicle()}else{say("Happy to help — come back anytime you need a fuel estimate! ⛽");clearOpts()}return}if(state.step=="pickMatch"){var v=state.matches[parseInt(val,10)];if(v){clearOpts();askFuel(v)}return}}
  function handleText(text){text=text.trim();if(!text)return;me(text);if(state.step=="askVehicle"||state.step=="idle"){var m=findMatches(text);if(m.length==1){clearOpts();askFuel(m[0])}else if(m.length>1){state.step="pickMatch";state.matches=m;say("I found a few matches — which one is yours?");showOpts(m.map(function(c,i){return {label:c[0],value:String(i)}}))}else{say("I couldn't find that one in my list yet. Try a shorter name (e.g. just \\"Alto\\" or \\"CD 70\\"), or add it on the <a href=\\"${'/add.html'}\\">add a vehicle</a> page.")}}else{say("Please pick one of the options above, or type the vehicle name again.")}}
  function greet(){msgs.innerHTML="";say("Hi, I'm <b>Peto</b> 👋 I can tell you exactly how much a full tank costs for your car or bike.");askVehicle()}
- function open(){panel.classList.add("open");document.getElementById("peto-badge").style.display="none";if(!msgs.children.length)greet();input.focus()}
- function close(){panel.classList.remove("open")}
- function init(){panel=document.getElementById("peto-panel");msgs=document.getElementById("peto-msgs");opts=document.getElementById("peto-opts");form=document.getElementById("peto-form");input=document.getElementById("peto-input");form.onsubmit=function(e){e.preventDefault();var t=input.value;input.value="";handleText(t)};${autoOpen ? 'setTimeout(function(){if(!panel.classList.contains("open"))open()},2500);' : ''}}
- return{open:open,close:close,init:init}
+ function open(){panel.classList.add("open");button.setAttribute("aria-expanded","true");if(!msgs.children.length)greet();input.focus()}
+ function close(){panel.classList.remove("open");button.setAttribute("aria-expanded","false");button.focus()}
+ function toggle(){if(panel.classList.contains("open"))close();else open()}
+ function init(){panel=document.getElementById("peto-panel");msgs=document.getElementById("peto-msgs");opts=document.getElementById("peto-opts");form=document.getElementById("peto-form");input=document.getElementById("peto-input");button=document.getElementById("peto-fab");form.onsubmit=function(e){e.preventDefault();var t=input.value;input.value="";handleText(t)}}
+ return{open:open,close:close,toggle:toggle,init:init}
 })();
 Peto.init();`;
 
@@ -183,16 +203,15 @@ function fmtRs(n){return "Rs "+Math.round(n).toLocaleString("en-PK")}
 function customVehicles(){try{return JSON.parse(localStorage.getItem("xc")||"[]")}catch(e){return []}}
 `;
 
-const nav = `<nav class="top"><div class="w"><a class="brand" href="/"><img src="/logo.svg" alt="" width="22" height="22" style="vertical-align:-5px;margin-right:4px"> FullTank.pk</a><a href="/cars/">Cars</a><a href="/bikes/">Bikes</a><a href="/search.html">Search</a><a href="/blog/">Blog</a><a href="/add.html">Add a vehicle</a><a href="/price-history.html">Price History</a></div></nav>`;
-const foot = `<footer>FullTank.pk — Fuel prices: OGRA/PSO notifications. High Octane is deregulated and varies by brand. Tank sizes are approximate. Built with <b>Peto</b>, our fuel-cost assistant — tap the ⛽ button to ask. <a href="/about.html">About</a> · <a href="/privacy.html">Privacy</a> · <a href="/contact.html">Contact</a></footer>`;
+const nav = `<nav class="top" aria-label="Primary"><div class="w"><a class="brand" href="/"><img src="/logo.svg" alt="" width="26" height="26">FullTank.pk</a><div class="nav-links"><a href="/cars/">Cars</a><a href="/bikes/">Bikes</a><a href="/search.html">Search</a><a href="/blog/">Guides</a><a href="/add.html">Add a vehicle</a><a href="/price-history.html">Price History</a></div></div></nav>`;
+const foot = `<footer class="site-footer"><div class="footer-inner"><div><p class="footer-brand">FullTank.pk</p><p class="footer-copy">A free fuel-cost calculator for cars and bikes in Pakistan. Compare fill-up costs using the latest listed fuel prices and approximate tank sizes.</p></div><nav class="footer-links" aria-label="Footer"><a href="/about.html">About</a><a href="/blog/">Fuel guides</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact</a></nav><p class="footer-meta">Fuel prices: OGRA/PSO notifications. High Octane is deregulated and varies by brand. Tank sizes are approximate. Ask Peto for a quick fuel-cost estimate.</p></div></footer>`;
 
 function page(file, title, desc, body, opts) {
   opts = opts || {};
   const url = SITE + '/' + file.replace(/index\.html$/, '');
   const ld = opts.ld ? `<script type="application/ld+json">${JSON.stringify(opts.ld)}</script>` : '';
-  const auto = !!opts.autoOpenPeto;
   const kw = opts.keywords ? `<meta name="keywords" content="${opts.keywords}">` : '';
-  w(file, `<!DOCTYPE html><html lang="en-PK"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title><meta name="description" content="${desc}">${kw}<meta name="author" content="FullTank.pk"><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${url}"><link rel="icon" type="image/svg+xml" href="/logo.svg"><meta property="og:site_name" content="FullTank.pk"><meta property="og:locale" content="en_PK"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="${opts.ogType || 'website'}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${desc}"><meta name="twitter:image" content="${SITE}/og.png">${ld}<style>${CSS}${PETO_CSS}</style><!-- AdSense script here --></head><body>${ICONS}${nav}${opts.band || ''}<div class="w">${body}</div>${foot}${petoHtml}<script>${sharedJs}${opts.extraJs || ''}${petoScript(auto)}</script></body></html>`);
+  w(file, `<!DOCTYPE html><html lang="en-PK"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title><meta name="description" content="${desc}">${kw}<meta name="author" content="FullTank.pk"><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${url}"><link rel="icon" type="image/svg+xml" href="/logo.svg"><meta property="og:site_name" content="FullTank.pk"><meta property="og:locale" content="en_PK"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="${opts.ogType || 'website'}"><meta property="og:url" content="${url}"><meta property="og:image" content="${SITE}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${desc}"><meta name="twitter:image" content="${SITE}/og.png">${ld}<style>${CSS}${PETO_CSS}</style><!-- AdSense script here --></head><body>${ICONS}${nav}${opts.band || ''}<div class="w">${body}</div>${foot}${petoHtml}<script>${sharedJs}${opts.extraJs || ''}${petoScript()}</script></body></html>`);
 }
 
 const tbl = (L, pre) => `<table><tr><th>Model</th><th>Tank</th><th>Full tank (petrol/diesel)</th></tr>${L.map(c => `<tr><td><a href="${pre}${c[5]}/${slug(c[0])}.html">${c[0]}</a></td><td>${c[3]} L</td><td>${rs(cost(c))}</td></tr>`).join('')}</table>`;
@@ -267,7 +286,7 @@ document.getElementById("go").onclick=function(){
 `;
   const brandDesc = `FullTank.pk is Pakistan's free fuel-cost calculator for cars and bikes, with Peto, a built-in assistant that asks which vehicle you have and tells you the full-tank cost in seconds.`;
   page('index.html', 'FullTank.pk — Petrol Price in Pakistan Today & Full Tank Cost Calculator', `FullTank.pk: today's petrol, high octane and diesel price in Pakistan. Pick your car or bike and instantly see the full-tank cost, or ask Peto. Updated ${pr.date}.`, body, {
-    autoOpenPeto: true, extraJs, band,
+    extraJs, band,
     keywords: 'petrol price in pakistan today, diesel price today, fuel price calculator pakistan, full tank cost calculator, high octane price pakistan, car fuel cost calculator, bike fuel cost calculator',
     ld: { '@context': 'https://schema.org', '@graph': [
       { '@type': 'WebApplication', name: 'FullTank.pk', applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any', inLanguage: 'en-PK', description: brandDesc, offers: { '@type': 'Offer', price: '0', priceCurrency: 'PKR' } },
