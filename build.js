@@ -44,6 +44,24 @@ nav.top .brand img{margin-right:8px}
 .nav-links a{color:#cbd5cf;text-decoration:none;font-size:.9rem;font-weight:600;padding:9px 11px;border-radius:9px;white-space:nowrap}
 .nav-links a:hover,.nav-links a:focus-visible{background:var(--ink2);color:#fff}
 .nav-links a:focus-visible{outline:2px solid var(--pri2);outline-offset:2px}
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
+.tool-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.tool-card h2{margin:0 0 6px}
+.tool-card>p:first-of-type{margin:0 0 14px;color:var(--mut);font-size:.9rem}
+.tool-card label{display:block;font-size:.86rem;font-weight:650;margin:10px 0 4px}
+.tool-card input,.tool-card select{min-width:0}
+.tool-result{display:none;margin-top:14px;padding:14px;border-radius:12px;background:var(--ink);color:#eef1ec}
+.tool-result.show{display:block}
+.tool-result b{color:#fff}
+.tool-result .meta{color:#aab6ad}
+.tool-result-error{color:#ffb4a9!important}
+.tool-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tool-actions button{width:auto}
+.garage-list{display:grid;gap:8px;margin-top:14px}
+.garage-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:12px}
+.garage-item button{width:auto;padding:7px 10px}
+.tool-note{font-size:.82rem;color:var(--mut)}
+.tool-shortcut{display:inline-flex;margin:4px 6px 4px 0;padding:7px 11px;border:1px solid var(--bd);border-radius:999px;text-decoration:none;font-size:.85rem;font-weight:650}
 .crumb{color:var(--mut);font-size:.85rem;margin:14px 0 4px}
 .crumb a{color:var(--mut)}
 h1{font-size:clamp(1.3rem,4.5vw,2rem);line-height:1.2;margin:6px 0 10px;letter-spacing:-.01em}
@@ -137,6 +155,7 @@ const ICONS = `<svg width="0" height="0" style="position:absolute" aria-hidden="
 <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M4 20c0-9 5-15 16-15 0 11-6 16-15 16-1 0-1 0-1-1Z"/><path d="M5 19 16 8"/></symbol>
 <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9M9 21v-7h6v7"/></symbol>
 </defs></svg>`;
 
 /* ---------- Peto (shared, embedded on every page) ---------- */
@@ -174,19 +193,37 @@ const petoHtml = `
 // autoOpen: only the home page pops Peto open on its own; other pages just show the button.
 const petoScript = () => `
 var Peto=(function(){
- var panel,msgs,opts,form,input,button,state={step:"idle",vehicle:null,matches:[]};
+ var panel,msgs,opts,form,input,button,state={step:"idle",vehicle:null,matches:[],data:{}};
  function el(h){var d=document.createElement("div");d.innerHTML=h;return d.firstChild}
+ function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;","'":"&#39;"}[c]})}
  function say(text){msgs.appendChild(el('<div class="pm bot">'+text+'</div>'));msgs.scrollTop=msgs.scrollHeight}
- function me(text){msgs.appendChild(el('<div class="pm me">'+text.replace(/</g,"&lt;")+'</div>'));msgs.scrollTop=msgs.scrollHeight}
+ function me(text){msgs.appendChild(el('<div class="pm me">'+esc(text)+'</div>'));msgs.scrollTop=msgs.scrollHeight}
  function showOpts(list){opts.innerHTML="";list.forEach(function(o){var b=document.createElement("button");b.className="popt";b.type="button";b.textContent=o.label;b.onclick=function(){me(o.label);handle(o.value)};opts.appendChild(b)})}
  function clearOpts(){opts.innerHTML=""}
  function findMatches(q){q=q.toLowerCase().trim();var L=VEHICLES.concat(customVehicles());var exact=L.filter(function(c){return c[0].toLowerCase()==q});if(exact.length)return exact;return L.filter(function(c){return c[0].toLowerCase().indexOf(q)>=0}).slice(0,6)}
  function askVehicle(){state.step="askVehicle";state.vehicle=null;state.matches=[];say("Which car or bike do you have? Type its name — e.g. <i>Suzuki Alto</i> or <i>Honda CD 70</i>.");clearOpts()}
- function askFuel(v){state.step="askFuel";state.vehicle=v;var isDieselOnly=v[4]=="d";say("Got it — <b>"+v[0]+"</b> ("+v[3]+" L tank). What fuel do you use?");if(isDieselOnly){showOpts([{label:"Diesel",value:"d"}])}else{showOpts([{label:"Normal (Petrol)",value:"p"},{label:"High Octane",value:"h"},{label:"Diesel",value:"d"}])}}
- function calc(fuelKey){var v=state.vehicle,price=fuelKey=="h"?PRICES.h:(fuelKey=="d"?PRICES.d:PRICES.p);var costV=v[3]*price,label=fuelKey=="h"?"High Octane":(fuelKey=="d"?"Diesel":"Normal petrol");say("Filling the <b>"+v[0]+"</b>'s "+v[3]+" L tank with <b>"+label+"</b> at Rs "+price.toFixed(2)+"/L costs about<br><span style=\\"font-size:1.3rem;font-weight:700;color:var(--acc)\\">"+fmtRs(costV)+"</span>");state.step="askMore";showOpts([{label:"Calculate another vehicle",value:"more"},{label:"No, that's all — thanks",value:"done"}])}
- function handle(val){if(state.step=="askFuel"){clearOpts();calc(val);return}if(state.step=="askMore"){if(val=="more"){askVehicle()}else{say("Happy to help — come back anytime you need a fuel estimate! ⛽");clearOpts()}return}if(state.step=="pickMatch"){var v=state.matches[parseInt(val,10)];if(v){clearOpts();askFuel(v)}return}}
- function handleText(text){text=text.trim();if(!text)return;me(text);if(state.step=="askVehicle"||state.step=="idle"){var m=findMatches(text);if(m.length==1){clearOpts();askFuel(m[0])}else if(m.length>1){state.step="pickMatch";state.matches=m;say("I found a few matches — which one is yours?");showOpts(m.map(function(c,i){return {label:c[0],value:String(i)}}))}else{say("I couldn't find that one in my list yet. Try a shorter name (e.g. just \\"Alto\\" or \\"CD 70\\"), or add it on the <a href=\\"${'/add.html'}\\">add a vehicle</a> page.")}}else{say("Please pick one of the options above, or type the vehicle name again.")}}
- function greet(){msgs.innerHTML="";say("Hi, I'm <b>Peto</b> 👋 I can tell you exactly how much a full tank costs for your car or bike.");askVehicle()}
+ function askFuel(v){state.step="askFuel";state.vehicle=v;say("Got it — <b>"+esc(v[0])+"</b> ("+v[3]+" L tank). What fuel do you use?");showOpts(v[4]=="d"?[{label:"Diesel",value:"d"}]:[{label:"Normal (Petrol)",value:"p"},{label:"High Octane",value:"h"}])}
+ function price(k){return k=="h"?PRICES.h:(k=="d"?PRICES.d:PRICES.p)}
+ function fuelName(k){return k=="h"?"High Octane":(k=="d"?"Diesel":"Normal petrol")}
+ function fuelChoices(){showOpts([{label:"Normal petrol",value:"p"},{label:"High Octane",value:"h"},{label:"Diesel",value:"d"}])}
+ function number(text){var m=String(text).replace(/,/g,"").match(/\\d+(?:\\.\\d+)?/);return m?Number(m[0]):NaN}
+ function askNumber(step,prompt){state.step=step;clearOpts();say(prompt)}
+ function start(action){clearOpts();state.data={};state.action=action;if(action=="trip"){askNumber("tripDistance","How far is the trip in kilometres?")}else if(action=="monthly"){askNumber("monthlyDistance","What is your daily round-trip commute distance in kilometres?")}else if(action=="ev"){askNumber("evDistance","How far do you want to travel in kilometres?")}else if(action=="compare"){state.step="compareOne";say("Name the first car or bike you want to compare.")}else if(action=="garage"){var g=savedVehicles();if(window.garageStorageError){say("I couldn't read your saved garage: "+esc(window.garageStorageError)+". Open <a href=\\"/tools.html#garage\\">Fuel tools</a> to check it.");return}if(!g.length){say("Your garage is empty on this device. Save vehicles on the <a href=\\"/tools.html#garage\\">Fuel tools</a> page.");return}say("Your saved vehicles: "+g.map(function(x){return "<b>"+esc(x.name)+"</b> ("+x.economy+" km/L)"}).join(", ")+". Manage them on the <a href=\\"/tools.html#garage\\">Fuel tools</a> page.")}else{askVehicle()}}
+ function askEconomy(step){askNumber(step,"What fuel economy do you get in km per litre? For example, 12.5.")}
+ function showFollowUps(){state.step="askMore";showOpts([{label:"Trip cost",value:"action:trip"},{label:"Monthly commute",value:"action:monthly"},{label:"Compare vehicles",value:"action:compare"},{label:"EV vs fuel",value:"action:ev"},{label:"Full-tank cost",value:"action:full"}])}
+ function askTripFuel(){state.step="tripFuel";say("Which fuel are you using?");fuelChoices()}
+ function finishTrip(){var d=state.data,litres=d.distance/d.economy,selected=litres*price(d.fuel);say("For <b>"+d.distance+" km</b> at "+d.economy+" km/L, you'll use about "+litres.toFixed(1)+" L of "+fuelName(d.fuel)+": <b>"+fmtRs(selected)+"</b>.");if(d.fuel=="p")say("At the same mileage, High Octane would cost about <b>"+fmtRs(litres*PRICES.h)+"</b> (difference: "+fmtRs(litres*(PRICES.h-PRICES.p))+").");else if(d.fuel=="h")say("At the same mileage, Normal petrol would cost about <b>"+fmtRs(litres*PRICES.p)+"</b>.");showFollowUps()}
+ function finishMonthly(){var d=state.data,days=d.days*52/12,km=d.distance*days,litres=km/d.economy,total=litres*price(d.fuel);say("At "+d.distance+" km/day, "+d.days+" days/week and "+d.economy+" km/L, that's about "+Math.round(km).toLocaleString("en-PK")+" km/month, "+litres.toFixed(1)+" L, and <b>"+fmtRs(total)+"/month</b> using "+fuelName(d.fuel)+".");if(d.fuel=="p")say("High Octane at the same mileage would be about "+fmtRs(litres*PRICES.h)+"/month.");else if(d.fuel=="h")say("Normal petrol at the same mileage would be about "+fmtRs(litres*PRICES.p)+"/month.");showFollowUps()}
+ function finishDays(text){var days=number(text);if(!Number.isInteger(days)||days<1||days>7){say("Enter a whole number from 1 to 7 days per week.");return}state.data.days=days;finishMonthly()}
+ function finishEv(){var d=state.data,ev=d.distance*d.kwh/100*d.rate,litres=d.distance/d.economy,fuel=litres*price(d.fuel),diff=fuel-ev; say("For "+d.distance+" km, charging uses about "+(d.distance*d.kwh/100).toFixed(1)+" kWh and costs <b>"+fmtRs(ev)+"</b>. "+fuelName(d.fuel)+" at "+d.economy+" km/L costs <b>"+fmtRs(fuel)+"</b> for the same distance.");say(diff>=0?"Estimated EV saving: <b>"+fmtRs(diff)+"</b> ("+(fuel?Math.round(diff/fuel*100):0)+"% less).":"Estimated EV cost is "+fmtRs(-diff)+" more for this distance. These estimates use the rates and efficiencies you entered.");showFollowUps()}
+ function vehicleResult(v){return "<b>"+esc(v[0])+"</b>: "+v[3]+" L tank, "+fuelName(v[4])+", full fill about "+fmtRs(v[3]*price(v[4]))}
+ function resolveVehicle(text,next){var matches=findMatches(text);if(matches.length==1){state.data[next]=matches[0];if(next=="first"){state.step="compareTwo";say("Now name the second vehicle.")}else{say(vehicleResult(state.data.first)+"<br>"+vehicleResult(state.data.second)+". These are estimated full-tank costs; actual fuel economy varies.");showFollowUps()}return}if(matches.length>1){state.step="pickVehicle";state.pickFor=next;state.matches=matches;say("Which one did you mean?");showOpts(matches.map(function(v,i){return{label:v[0],value:"vehicle:"+i}}));return}say("I couldn't find that vehicle. Try a shorter model name, or add it on the <a href=\\"/add.html\\">Add a vehicle</a> page.")}
+ function calc(fuelKey){var v=state.vehicle,costV=v[3]*price(fuelKey);say("Filling the <b>"+esc(v[0])+"</b>'s "+v[3]+" L tank with <b>"+fuelName(fuelKey)+"</b> at Rs "+price(fuelKey).toFixed(2)+"/L costs about<br><span style=\\"font-size:1.3rem;font-weight:700;color:var(--acc)\\">"+fmtRs(costV)+"</span>");showFollowUps()}
+ function chooseVehicle(v){clearOpts();if(state.pickFor=="full"){state.vehicle=v;askFuel(v);return}state.data[state.pickFor]=v;if(state.pickFor=="first"){state.step="compareTwo";say("Now name the second vehicle.")}else{say(vehicleResult(state.data.first)+"<br>"+vehicleResult(state.data.second)+". These are estimated full-tank costs; actual fuel economy varies.");showFollowUps()}}
+ function handle(val){if(val.indexOf("action:")==0){start(val.slice(7));return}if(val.indexOf("vehicle:")==0&&state.step=="pickVehicle"){var picked=state.matches[Number(val.slice(8))];if(picked)chooseVehicle(picked);return}if(state.step=="askFuel"){clearOpts();calc(val);return}if(state.step=="tripFuel"){state.data.fuel=val;finishTrip();return}if(state.step=="monthlyFuel"){state.data.fuel=val;askNumber("monthlyDays","How many days each week do you commute?");return}if(state.step=="monthlyDays"){finishDays(val);return}if(state.step=="evFuel"){state.data.fuel=val;finishEv();return}if(state.step=="askMore"){if(val=="more"){start("full")}else{say("You can ask about a trip, monthly commute, vehicle comparison, EV charging, or your saved garage anytime.");showOpts([{label:"Trip cost",value:"action:trip"},{label:"Monthly commute",value:"action:monthly"},{label:"Compare vehicles",value:"action:compare"},{label:"EV vs petrol",value:"action:ev"}])}return}}
+ function handleNumber(text){var n=number(text);if(!Number.isFinite(n)||n<=0){say("Please enter a number greater than zero.");return false}return n}
+ function handleText(text){text=text.trim();if(!text)return;me(text);if(state.step=="askVehicle"||state.step=="idle"||state.step=="askMore"){if(/\\b(month|monthly|commut|per week|per month)\\b/i.test(text)){start("monthly");return}if(/\\b(electric|\\bev\\b|charg(e|ing)|electricity)\\b/i.test(text)){start("ev");return}if(/\\b(compare|comparison|versus|\\bvs\\b)\\b/i.test(text)){start("compare");return}if(/\\b(trip|journey|distance|travel cost|drive cost)\\b/i.test(text)){start("trip");return}if(/\\b(my )?(saved )?(cars|vehicles|garage)\\b/i.test(text)){start("garage");return}if(state.step=="askMore"){state.step="askVehicle"}var m=findMatches(text);if(m.length==1){clearOpts();askFuel(m[0])}else if(m.length>1){state.step="pickVehicle";state.pickFor="full";state.matches=m;say("I found a few matches — which one is yours?");showOpts(m.map(function(c,i){return {label:c[0],value:"vehicle:"+i}}))}else{say("I couldn't find that one in my list yet. Try a shorter name, or add it on the <a href=\\"/add.html\\">Add a vehicle</a> page.")}return}if(state.step=="compareOne"){resolveVehicle(text,"first");return}if(state.step=="compareTwo"){resolveVehicle(text,"second");return}if(state.step=="pickVehicle"){say("Choose one of the matching vehicles above.");return}if(state.step=="monthlyDays"){finishDays(text);return}var n=handleNumber(text);if(!n)return;if(state.step=="tripDistance"){state.data.distance=n;askEconomy("tripEconomy")}else if(state.step=="tripEconomy"){state.data.economy=n;askTripFuel()}else if(state.step=="monthlyDistance"){state.data.distance=n;askEconomy("monthlyEconomy")}else if(state.step=="monthlyEconomy"){state.data.economy=n;state.step="monthlyFuel";say("Which fuel do you use?");fuelChoices()}else if(state.step=="evDistance"){state.data.distance=n;askNumber("evKwh","What is EV efficiency in kWh per 100 km? Use the vehicle or trip-computer figure.")}else if(state.step=="evKwh"){state.data.kwh=n;askNumber("evRate","What is your electricity rate in rupees per kWh? Check your bill or charger tariff.")}else if(state.step=="evRate"){state.data.rate=n;askEconomy("evEconomy")}else if(state.step=="evEconomy"){state.data.economy=n;state.step="evFuel";say("Which petrol or diesel price should I use for the comparison?");fuelChoices()}}
+ function greet(){msgs.innerHTML="";say("Hi, I'm <b>Peto</b> 👋 I can calculate full-tank, trip, monthly commute, EV charging, and vehicle comparisons. What would you like?");showOpts([{label:"Full-tank cost",value:"action:full"},{label:"Trip cost",value:"action:trip"},{label:"Monthly commute",value:"action:monthly"},{label:"Compare vehicles",value:"action:compare"},{label:"EV vs fuel",value:"action:ev"},{label:"My saved garage",value:"action:garage"}])}
  function open(){panel.classList.add("open");button.setAttribute("aria-expanded","true");if(!msgs.children.length)greet();input.focus()}
  function close(){panel.classList.remove("open");button.setAttribute("aria-expanded","false");button.focus()}
  function toggle(){if(panel.classList.contains("open"))close();else open()}
@@ -201,10 +238,11 @@ var PRICES={p:${pr.petrol},h:${pr.hOctane},d:${pr.diesel}};
 var VEHICLES=${JSON.stringify(V)};
 function fmtRs(n){return "Rs "+Math.round(n).toLocaleString("en-PK")}
 function customVehicles(){try{return JSON.parse(localStorage.getItem("xc")||"[]")}catch(e){return []}}
+function savedVehicles(){try{window.garageStorageError="";var x=JSON.parse(localStorage.getItem("garage")||"[]");if(!Array.isArray(x)||!x.every(function(v){return v&&typeof v.name=="string"&&Number.isFinite(v.economy)&&v.economy>0&&["p","h","d"].indexOf(v.fuel)>=0}))throw new Error("Saved garage data is invalid.");return x}catch(e){window.garageStorageError=e.message;return []}}
 `;
 
-const nav = `<nav class="top" aria-label="Primary"><div class="w"><a class="brand" href="/"><img src="/logo.svg" alt="" width="26" height="26">FullTank.pk</a><div class="nav-links"><a href="/cars/">Cars</a><a href="/bikes/">Bikes</a><a href="/search.html">Search</a><a href="/blog/">Guides</a><a href="/add.html">Add a vehicle</a><a href="/price-history.html">Price History</a></div></div></nav>`;
-const foot = `<footer class="site-footer"><div class="footer-inner"><div><p class="footer-brand">FullTank.pk</p><p class="footer-copy">A free fuel-cost calculator for cars and bikes in Pakistan. Compare fill-up costs using the latest listed fuel prices and approximate tank sizes.</p></div><nav class="footer-links" aria-label="Footer"><a href="/about.html">About</a><a href="/blog/">Fuel guides</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact</a></nav><p class="footer-meta">Fuel prices: OGRA/PSO notifications. High Octane is deregulated and varies by brand. Tank sizes are approximate. Ask Peto for a quick fuel-cost estimate.</p></div></footer>`;
+const nav = `<nav class="top" aria-label="Primary"><div class="w"><a class="brand" href="/"><img src="/logo.svg" alt="" width="26" height="26">FullTank.pk</a><div class="nav-links"><a href="/" aria-label="Home page"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg> Home</a><a href="/cars/">Cars</a><a href="/bikes/">Bikes</a><a href="/tools.html">Fuel tools</a><a href="/search.html">Search</a><a href="/blog/">Guides</a><a href="/add.html">Add a vehicle</a><a href="/price-history.html">Price History</a></div></div></nav>`;
+const foot = `<footer class="site-footer"><div class="footer-inner"><div><p class="footer-brand">FullTank.pk</p><p class="footer-copy">A free fuel-cost calculator for cars and bikes in Pakistan. Compare fill-up costs using the latest listed fuel prices and approximate tank sizes.</p></div><nav class="footer-links" aria-label="Footer"><a href="/tools.html">Fuel tools</a><a href="/about.html">About</a><a href="/blog/">Fuel guides</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact</a></nav><p class="footer-meta">Fuel prices: OGRA/PSO notifications. High Octane is deregulated and varies by brand. Tank sizes are approximate. Ask Peto for a quick fuel-cost estimate.</p></div></footer>`;
 
 function page(file, title, desc, body, opts) {
   opts = opts || {};
@@ -240,6 +278,7 @@ const tbl = (L, pre) => `<table><tr><th>Model</th><th>Tank</th><th>Full tank (pe
 <button class="p" id="go" type="button">Calculate</button></div>
 <div class="result" id="res"></div>
 </div>
+<p><a class="tool-shortcut" href="/tools.html#trip">Trip &amp; monthly cost</a><a class="tool-shortcut" href="/tools.html#compare">Compare vehicles</a><a class="tool-shortcut" href="/tools.html#ev">EV vs petrol</a><a class="tool-shortcut" href="/tools.html#garage">Save my vehicles</a></p>
 <div class="ad" aria-label="Advertisement">Ad slot (AdSense)</div>
 <h2>Browse by brand</h2>
 <div class="tiles">
@@ -294,6 +333,88 @@ document.getElementById("go").onclick=function(){
       { '@type': 'WebSite', name: 'FullTank.pk', url: SITE + '/', description: brandDesc, potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: SITE + '/search.html?q={search_term_string}' }, 'query-input': 'required name=search_term_string' } },
       { '@type': 'FAQPage', mainEntity: [{ '@type': 'Question', name: 'What is the petrol price in Pakistan today?', acceptedAnswer: { '@type': 'Answer', text: `Petrol is around Rs ${pr.petrol.toFixed(2)} per litre and diesel around Rs ${pr.diesel.toFixed(2)} per litre, updated ${pr.date}.` } }, { '@type': 'Question', name: 'What is Peto?', acceptedAnswer: { '@type': 'Answer', text: brandDesc } }] }
     ] }
+  });
+}
+
+/* ================= /tools.html — trip, comparison, EV and local garage ================= */
+{
+  const body = `
+<p class="crumb"><a href="/">Home</a> › Fuel tools</p>
+<h1>Fuel &amp; vehicle tools</h1>
+<p>Estimate trip and monthly fuel spend, compare two vehicles, check EV running costs, and keep your vehicles saved on this device.</p>
+<div class="tool-grid">
+ <section class="tool-card" id="trip">
+  <h2>Trip &amp; monthly fuel cost</h2><p>Enter your real-world fuel average. Monthly estimates use 52 weeks ÷ 12 months.</p>
+  <form id="trip-form">
+   <label for="trip-distance">One-way or total trip distance (km)</label><input id="trip-distance" type="number" min="0.1" step="any" value="100" required>
+   <label for="trip-economy">Fuel economy (km per litre)</label><input id="trip-economy" type="number" min="0.1" step="any" placeholder="e.g. 12" required>
+   <label for="trip-fuel">Fuel</label><select id="trip-fuel"><option value="p">Normal petrol</option><option value="h">High Octane</option><option value="d">Diesel</option></select>
+   <label for="commute-distance">Daily round-trip commute (km)</label><input id="commute-distance" type="number" min="0.1" step="any" placeholder="Optional">
+   <label for="commute-days">Commute days per week</label><input id="commute-days" type="number" min="1" max="7" step="1" value="5">
+   <div class="tool-actions"><button class="p" type="submit">Calculate trip &amp; month</button></div>
+  </form><div id="trip-result" class="tool-result" role="status" aria-live="polite"></div>
+ </section>
+ <section class="tool-card" id="compare">
+  <h2>Compare two vehicles</h2><p>Compare tank capacity and full-tank cost. Add your own fuel averages to compare the same journey.</p>
+  <form id="compare-form">
+   <label for="compare-a">First vehicle</label><select id="compare-a" required><option value="">Choose a vehicle</option></select>
+   <label for="compare-fuel-a">Fuel for first vehicle</label><select id="compare-fuel-a"><option value="p">Normal petrol</option><option value="h">High Octane</option><option value="d">Diesel</option></select>
+   <label for="compare-economy-a">First vehicle fuel economy (km/L)</label><input id="compare-economy-a" type="number" min="0.1" step="any" placeholder="Optional, for trip comparison">
+   <label for="compare-b">Second vehicle</label><select id="compare-b" required><option value="">Choose a vehicle</option></select>
+   <label for="compare-fuel-b">Fuel for second vehicle</label><select id="compare-fuel-b"><option value="p">Normal petrol</option><option value="h">High Octane</option><option value="d">Diesel</option></select>
+   <label for="compare-economy-b">Second vehicle fuel economy (km/L)</label><input id="compare-economy-b" type="number" min="0.1" step="any" placeholder="Optional, for trip comparison">
+   <label for="compare-distance">Distance for running-cost comparison (km)</label><input id="compare-distance" type="number" min="0.1" step="any" value="100" required>
+   <div class="tool-actions"><button class="p" type="submit">Compare vehicles</button></div>
+  </form><div id="compare-result" class="tool-result" role="status" aria-live="polite"></div>
+ </section>
+ <section class="tool-card" id="ev">
+  <h2>EV charging vs petrol</h2><p>Use your charger tariff and vehicle consumption for a like-for-like distance estimate.</p>
+  <form id="ev-form">
+   <label for="ev-distance">Distance (km)</label><input id="ev-distance" type="number" min="0.1" step="any" value="100" required>
+   <label for="ev-efficiency">EV energy use (kWh per 100 km)</label><input id="ev-efficiency" type="number" min="0.1" step="any" placeholder="Check the vehicle or trip computer" required>
+   <label for="ev-rate">Electricity rate (Rs per kWh)</label><input id="ev-rate" type="number" min="0.1" step="any" placeholder="Enter your bill or charger tariff" required>
+   <label for="ev-petrol-economy">Petrol/diesel vehicle economy (km/L)</label><input id="ev-petrol-economy" type="number" min="0.1" step="any" placeholder="e.g. 12" required>
+   <label for="ev-fuel">Fuel for comparison</label><select id="ev-fuel"><option value="p">Normal petrol</option><option value="h">High Octane</option><option value="d">Diesel</option></select>
+   <div class="tool-actions"><button class="p" type="submit">Compare running costs</button></div>
+  </form><div id="ev-result" class="tool-result" role="status" aria-live="polite"></div>
+ </section>
+ <section class="tool-card" id="garage">
+  <h2>Your saved vehicles</h2><p>Save a vehicle and its usual fuel economy for quicker estimates. This garage stays in this browser only.</p>
+  <form id="garage-form">
+   <label for="garage-vehicle">Vehicle</label><select id="garage-vehicle" required><option value="">Choose a vehicle</option></select>
+   <label for="garage-fuel">Usual fuel</label><select id="garage-fuel"><option value="p">Normal petrol</option><option value="h">High Octane</option><option value="d">Diesel</option></select>
+   <label for="garage-economy">Fuel economy (km/L)</label><input id="garage-economy" type="number" min="0.1" step="any" placeholder="e.g. 12" required>
+   <div class="tool-actions"><button class="p" type="submit">Save vehicle</button></div>
+  </form><div id="garage-result" class="tool-result" role="status" aria-live="polite"></div><div id="garage-list" class="garage-list"></div>
+ </section>
+</div>
+<p class="tool-note">All estimates use the current listed fuel prices and the mileage or tariff you provide. Actual costs vary with traffic, driving style, route, weather, and charging losses. No garage data is uploaded.</p>
+`;
+  const extraJs = `
+(function(){
+ var priceMap=PRICES, fuelLabels={p:"Normal petrol",h:"High Octane",d:"Diesel"};
+ function get(id){return document.getElementById(id)}
+ function value(id,label,optional){var raw=get(id).value.trim(),n=Number(raw);if(optional&&!raw)return null;if(!Number.isFinite(n)||n<=0)throw new Error(label+" must be a number greater than zero.");return n}
+ function result(id,text,error){var el=get(id);el.textContent=text;el.classList.add("show");el.classList.toggle("tool-result-error",!!error)}
+ function allVehicles(){var list=VEHICLES.concat(customVehicles()),seen={};return list.filter(function(v){if(!v||!v[0]||seen[v[0]])return false;seen[v[0]]=true;return true})}
+ function vehicle(name){return allVehicles().find(function(v){return v[0]===name})}
+ function populateVehicles(id){var select=get(id);allVehicles().forEach(function(v){var option=document.createElement("option");option.value=v[0];option.textContent=v[0]+" — "+(v[5]=="bike"?"Bike":"Car");select.appendChild(option)})}
+ function setFuelOptions(id,v,selected){var select=get(id),keys=v&&v[4]=="d"?["d"]:["p","h"];select.innerHTML="";keys.forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=fuelLabels[k];select.appendChild(o)});select.value=keys.indexOf(selected)>=0?selected:keys[0]}
+ function bindFuel(nameId,fuelId){get(nameId).addEventListener("change",function(){var v=vehicle(get(nameId).value);setFuelOptions(fuelId,v,v&&v[4]=="d"?"d":"p")})}
+ populateVehicles("compare-a");populateVehicles("compare-b");populateVehicles("garage-vehicle");
+ bindFuel("compare-a","compare-fuel-a");bindFuel("compare-b","compare-fuel-b");
+ bindFuel("garage-vehicle","garage-fuel");
+ get("trip-form").addEventListener("submit",function(e){e.preventDefault();try{var distance=value("trip-distance","Trip distance"),economy=value("trip-economy","Fuel economy"),fuel=get("trip-fuel").value,litres=distance/economy,cost=litres*priceMap[fuel],commuteRaw=get("commute-distance").value.trim(),text="Trip: "+distance.toLocaleString("en-PK")+" km uses about "+litres.toFixed(1)+" L and costs "+fmtRs(cost)+" using "+fuelLabels[fuel]+".";if(fuel=="p")text+=" At the same mileage, High Octane would cost "+fmtRs(litres*priceMap.h)+".";else if(fuel=="h")text+=" Normal petrol at the same mileage would cost "+fmtRs(litres*priceMap.p)+".";if(commuteRaw){var commute=value("commute-distance","Daily commute"),days=value("commute-days","Commute days");if(!Number.isInteger(days)||days>7)throw new Error("Commute days must be a whole number from 1 to 7.");var monthlyDistance=commute*days*52/12,monthlyLitres=monthlyDistance/economy;text+="\\nMonthly commute ("+commute+" km/day, "+days+" days/week): about "+Math.round(monthlyDistance).toLocaleString("en-PK")+" km, "+monthlyLitres.toFixed(1)+" L and "+fmtRs(monthlyLitres*priceMap[fuel])+".";if(fuel=="p")text+=" High Octane: "+fmtRs(monthlyLitres*priceMap.h)+".";else if(fuel=="h")text+=" Normal petrol: "+fmtRs(monthlyLitres*priceMap.p)+"."}result("trip-result",text)}catch(err){result("trip-result",err.message,true)}});
+ get("compare-form").addEventListener("submit",function(e){e.preventDefault();try{var a=vehicle(get("compare-a").value),b=vehicle(get("compare-b").value);if(!a||!b)throw new Error("Choose two vehicles to compare.");var d=value("compare-distance","Comparison distance"),fa=get("compare-fuel-a").value,fb=get("compare-fuel-b").value,ea=value("compare-economy-a","First vehicle economy",true),eb=value("compare-economy-b","Second vehicle economy",true),tankA=a[3]*priceMap[fa],tankB=b[3]*priceMap[fb],text=a[0]+": "+a[3]+" L tank; "+fuelLabels[fa]+" full fill "+fmtRs(tankA)+".\\n"+b[0]+": "+b[3]+" L tank; "+fuelLabels[fb]+" full fill "+fmtRs(tankB)+".";text+="\\nFull-tank difference: "+(tankA<=tankB?a[0]:b[0])+" costs "+fmtRs(Math.abs(tankA-tankB))+" less to fill.";if(ea)text+="\\n"+a[0]+" for "+d+" km: "+fmtRs(d/ea*priceMap[fa])+" ("+(d/ea).toFixed(1)+" L).";if(eb)text+="\\n"+b[0]+" for "+d+" km: "+fmtRs(d/eb*priceMap[fb])+" ("+(d/eb).toFixed(1)+" L).";if(ea&&eb){var tripA=d/ea*priceMap[fa],tripB=d/eb*priceMap[fb];text+="\\nTrip-cost difference: "+(tripA<=tripB?a[0]:b[0])+" costs "+fmtRs(Math.abs(tripA-tripB))+" less for "+d+" km."}else{text+="\\nAdd both fuel averages to compare trip costs."}result("compare-result",text)}catch(err){result("compare-result",err.message,true)}});
+ get("ev-form").addEventListener("submit",function(e){e.preventDefault();try{var d=value("ev-distance","Distance"),eff=value("ev-efficiency","EV energy use"),rate=value("ev-rate","Electricity rate"),economy=value("ev-petrol-economy","Fuel economy"),fuel=get("ev-fuel").value,kwh=d*eff/100,evCost=kwh*rate,litres=d/economy,fuelCost=litres*priceMap[fuel],diff=fuelCost-evCost,text=d+" km: EV uses about "+kwh.toFixed(1)+" kWh and costs "+fmtRs(evCost)+".\\n"+fuelLabels[fuel]+" uses about "+litres.toFixed(1)+" L and costs "+fmtRs(fuelCost)+".";text+=diff>=0?"\\nEstimated EV saving: "+fmtRs(diff)+" ("+(fuelCost?Math.round(diff/fuelCost*100):0)+"% less).":"\\nEV costs about "+fmtRs(-diff)+" more for this distance.";result("ev-result",text)}catch(err){result("ev-result",err.message,true)}});
+ function showGarage(){var list=get("garage-list");list.innerHTML="";var entries=savedVehicles();if(window.garageStorageError){result("garage-result","Could not read saved garage: "+window.garageStorageError,true);list.textContent="Your saved garage is unavailable.";return}if(!entries.length){list.textContent="No saved vehicles yet.";return}entries.forEach(function(item,index){var card=document.createElement("div");card.className="garage-item";var info=document.createElement("span");info.textContent=item.name+" · "+item.economy+" km/L · "+fuelLabels[item.fuel];var actions=document.createElement("div");actions.className="tool-actions";var use=document.createElement("button");use.type="button";use.textContent="Use in trip";use.addEventListener("click",function(){get("trip-economy").value=item.economy;get("trip-fuel").value=item.fuel;get("commute-distance").focus();location.hash="trip"});var compare=document.createElement("button");compare.type="button";compare.textContent="Compare";compare.addEventListener("click",function(){var target=get("compare-a").value?"b":"a";get("compare-"+target).value=item.name;get("compare-"+target).dispatchEvent(new Event("change"));get("compare-economy-"+target).value=item.economy;location.hash="compare"});var remove=document.createElement("button");remove.type="button";remove.textContent="Remove";remove.setAttribute("aria-label","Remove "+item.name+" from garage");remove.addEventListener("click",function(){var next=savedVehicles();next.splice(index,1);try{localStorage.setItem("garage",JSON.stringify(next));result("garage-result","Vehicle removed from your garage.");showGarage()}catch(err){result("garage-result","Could not update your garage: "+err.message,true)}});actions.append(use,compare,remove);card.append(info,actions);list.appendChild(card)})}
+ get("garage-form").addEventListener("submit",function(e){e.preventDefault();try{var name=get("garage-vehicle").value,economy=value("garage-economy","Fuel economy"),fuel=get("garage-fuel").value;if(!vehicle(name))throw new Error("Choose a vehicle from the list.");var entries=savedVehicles().filter(function(x){return x.name!==name});entries.push({name:name,economy:economy,fuel:fuel});try{localStorage.setItem("garage",JSON.stringify(entries))}catch(storageError){throw new Error("Your browser could not save this vehicle. Check its storage settings and try again.")}result("garage-result",name+" saved on this device.");showGarage()}catch(err){result("garage-result",err.message,true)}});
+ showGarage();
+})();
+`;
+  page('tools.html', 'Fuel & Vehicle Tools: Trip, EV & Monthly Costs | FullTank.pk', 'Estimate trip and monthly fuel costs, compare vehicle fill-ups, compare EV charging with fuel, and save vehicles locally.', body, {
+    extraJs, keywords: 'trip fuel cost calculator pakistan, monthly commute fuel calculator, compare car running costs, electric vehicle charging cost calculator pakistan, save vehicle fuel average',
+    ld: crumb([['Home', '/'], ['Fuel tools', '/tools.html']])
   });
 }
 
@@ -445,7 +566,7 @@ for (const k of ['car', 'bike']) {
 <h2>What we do</h2>
 <p>We track Pakistan's official OGRA-notified petrol and diesel prices, and a typical High Octane (HOBC) rate, and combine them with the manufacturer tank capacity of ${V.length}+ car and bike models sold in Pakistan — Suzuki, Toyota, Honda, Hyundai, Kia, Haval, Jetour, BYD, and more — to pre-calculate a full-tank cost for every single one, updated daily.</p>
 <h2>Peto</h2>
-<p>Peto is the small chat assistant in the corner of every page. It asks which vehicle you have and what fuel you use, then tells you the cost directly — a faster path than browsing for people who already know their exact model. It's a fixed, scripted conversation, not a hosted AI model, so it works instantly with nothing to configure.</p>
+<p>Peto is the small chat assistant in the corner of every page. It can estimate full-tank, trip, monthly commute, and EV charging costs, and compare two vehicles. It uses your entered distance, mileage, and electricity tariff where needed. Peto is a fixed, scripted conversation, not a hosted AI model, so it works instantly with nothing to configure. Open <a href="/tools.html">Fuel tools</a> for forms and saved vehicles.</p>
 <h2>Where our numbers come from</h2>
 <ul><li><b>Fuel prices:</b> OGRA and PSO notifications, refreshed daily just after midnight (PKT).</li><li><b>Tank capacities:</b> manufacturer specifications where available, cross-checked against PakWheels listings. We mark these as approximate because real-world variants and model years can differ slightly.</li></ul>
 <h2>What we're not</h2>
@@ -467,7 +588,7 @@ for (const k of ['car', 'bike']) {
 <p>This policy explains what information FullTank.pk collects, how cookies and advertising work on this site, and the choices available to you.</p>
 
 <h2>Information we collect</h2>
-<p>We do not require sign-up, and we do not collect your name, email, or any personal identifier to use the calculator, Peto, or the search tool. Any car or bike you add through <a href="/add.html">Add a vehicle</a> is stored only in your own browser's local storage — it is never sent to us or to any server, and it stays on your device until you clear your browser data.</p>
+<p>We do not require sign-up, and we do not collect your name, email, or any personal identifier to use the calculator, Peto, or the search tool. Vehicles you add through <a href="/add.html">Add a vehicle</a> and vehicles, fuel averages, and fuel preferences you save in the <a href="/tools.html">Fuel tools garage</a> are stored only in your own browser's local storage — they are never sent to us or to any server, and stay on your device until you clear your browser data.</p>
 
 <h2>Cookies and advertising (Google AdSense)</h2>
 <p>This site may show ads served by Google and its advertising partners, through Google AdSense. As part of that:</p>
@@ -504,7 +625,7 @@ for (const k of ['car', 'bike']) {
 
 /* ================= sitemap + robots ================= */
 const blogSlugs = JSON.parse(fs.readFileSync('blog.json', 'utf8')).map(p => p.slug);
-const urls = ['', 'cars/', 'bikes/', 'search.html', 'blog/', ...blogSlugs.map(s => `blog/${s}.html`), 'add.html', 'price-history.html', 'about.html', 'privacy.html', 'contact.html',
+const urls = ['', 'cars/', 'bikes/', 'search.html', 'tools.html', 'blog/', ...blogSlugs.map(s => `blog/${s}.html`), 'add.html', 'price-history.html', 'about.html', 'privacy.html', 'contact.html',
   ...['car', 'bike'].flatMap(k => [...brandsOf(k).map(b => `${K[k].dir}/${slug(b)}.html`), ...COLL[k].filter(([t]) => of(k).some(c => c[1] == t)).map(([t, s]) => `${K[k].dir}/${s}.html`)]),
   ...V.map(c => `${c[5]}/${slug(c[0])}.html`)];
 const d = new Date().toISOString().slice(0, 10);
